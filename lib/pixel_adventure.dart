@@ -13,11 +13,15 @@ class PixelAdventure extends FlameGame {
   late final CameraComponent cam;
   final world = LevelComponent();
   @override
-  FutureOr<void> onLoad() {
+  FutureOr<void> onLoad() async {
+    //LOAD ALL in cache..se troppe faccio solo load una alla vola quelle che servono per partire
+    await images.loadAllImages();
+    //640x368 sono le dim della mappa in Tiled
     cam = CameraComponent.withFixedResolution(
         width: 640, height: 360, world: world)
       ..viewfinder.anchor = Anchor.topLeft;
     addAll([cam, world]);
+
     return super.onLoad();
   }
 }
