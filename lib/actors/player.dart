@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flame/components.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
-import 'package:intl/intl.dart' show toBeginningOfSentenceCase;
 
 enum PlayerState {
   idle,

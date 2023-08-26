@@ -5,7 +5,6 @@
     },
     "activeFile": "Level-01.tmx",
     "expandedProjectPaths": [
-        "."
     ],
     "file.lastUsedOpenFilter": "Tutti i file (*)",
     "fileStates": {
@@ -17,10 +16,10 @@
         },
         "Level-01.tmx": {
             "scale": 1.951953125,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
                 "x": 320.44826896137687,
-                "y": 184.43065839503703
+                "y": 183.4060436261757
             }
         },
         "Pixel Adventure.tsx": {
