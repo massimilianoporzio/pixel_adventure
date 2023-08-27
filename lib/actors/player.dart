@@ -12,7 +12,7 @@ enum PlayerState {
 class Player extends SpriteAnimationGroupComponent
     with HasGameRef<PixelAdventure> {
   final String character;
-  Player({required this.character}) : super();
+  Player({position, required this.character}) : super(position: position);
 
   //gruppi di animazioni non solo una!
   late final SpriteAnimation idleAnimation;
@@ -44,7 +44,7 @@ class Player extends SpriteAnimationGroupComponent
       PlayerState.running: runningAnimation
     };
     //animazione corrente (la setto!)
-    current = PlayerState.running;
+    current = PlayerState.idle;
   }
 
   SpriteAnimation _getSpriteAnimation({
