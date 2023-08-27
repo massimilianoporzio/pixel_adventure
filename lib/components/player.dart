@@ -7,6 +7,8 @@ import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
+import 'collision.dart';
+
 enum PlayerState {
   idle,
   running,
@@ -37,33 +39,41 @@ class Player extends SpriteAnimationGroupComponent
   double horizontalInput = 0; //da tastiera o gamepad/joystick
   double moveSpeed = 100;
   Vector2 velocity = Vector2.zero();
+  //anche il player ha un rif alla lista di blocchi di collisione
+  List<CollisionBlock> collisionBlocks = [];
 
   @override
   FutureOr<void> onLoad() async {
+    debugColor = const Color.fromARGB(255, 255, 128, 0);
+    debugMode = true;
     if (!isMobile) {
+      _setUpGamePad();
 //gestisco il controller
-      final gamepads = await Gamepads.list();
-      if (gamepads.isNotEmpty) {
-        Gamepads.events.listen((event) {
-          if (event.type == KeyType.analog) {
-            final isLeft = event.key == "dwXpos" &&
-                event.value < 32767.0; //dip dal controller
-            final isRight = event.key == "dwXpos" &&
-                event.value > 32767.0; //dip dal controller
-            if (isLeft) {
-              horizontalInput = -1;
-            } else if (isRight) {
-              horizontalInput = 1;
-            } else {
-              horizontalInput = 0;
-            }
-          }
-        });
-      }
     }
 
     _loadAllAnimations();
     return super.onLoad();
+  }
+
+  void _setUpGamePad() async {
+    final gamepads = await Gamepads.list();
+    if (gamepads.isNotEmpty) {
+      Gamepads.events.listen((event) {
+        if (event.type == KeyType.analog) {
+          final isLeft = event.key == "dwXpos" &&
+              event.value < 32767.0; //dip dal controller
+          final isRight = event.key == "dwXpos" &&
+              event.value > 32767.0; //dip dal controller
+          if (isLeft) {
+            horizontalInput = -1;
+          } else if (isRight) {
+            horizontalInput = 1;
+          } else {
+            horizontalInput = 0;
+          }
+        }
+      });
+    }
   }
 
   //chiamata ad OGNI frame

@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'package:pixel_adventure/components/collision.dart';
 
 import 'package:pixel_adventure/components/player.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
@@ -11,6 +12,7 @@ class LevelComponent extends World {
   final String levelName;
   final Player player;
   late TiledComponent level;
+  List<CollisionBlock> collisionBlocks = [];
   LevelComponent({required this.levelName, required this.player});
 
   @override
@@ -19,20 +21,45 @@ class LevelComponent extends World {
 
     add(level); //agg al gioco
     //tiro fuori il layer degli oggetti
-    final objectsLayer = level.tileMap.getLayer<ObjectGroup>("Objects");
-    //loop tra gli ogg del layer
-    for (var obj in objectsLayer!.objects) {
-      switch (obj.class_) {
-        case 'Player':
-          player.position = Vector2(obj.x, obj.y);
-          add(player);
-          break;
+    final spawnpointsLayer = level.tileMap.getLayer<ObjectGroup>("Spawnpoints");
+    if (spawnpointsLayer != null) {
+//loop tra gli ogg del layer
+      for (var obj in spawnpointsLayer.objects) {
+        switch (obj.class_) {
+          case 'Player':
+            player.position = Vector2(obj.x, obj.y);
+            add(player);
+            break;
 
-        default:
+          default:
+        }
       }
     }
-    //il player l'ho caricato girando tra gli oggetti
-    //add(Player(character: kNinjaFrogName)); //creo player e aggiungo
+    final collisionLayer = level.tileMap.getLayer<ObjectGroup>("Collisions");
+    if (collisionLayer != null) {
+      for (var obj in collisionLayer.objects) {
+        switch (obj.class_) {
+          case 'Platform':
+            final platform = CollisionBlock(
+              position: Vector2(obj.x, obj.y),
+              size: Vector2(obj.width, obj.height),
+              isPlatform: true,
+            );
+            collisionBlocks.add(
+                platform); //agg alla lista di modo che altrove posso usarli
+            add(platform);
+            break;
+          default:
+            final block = CollisionBlock(
+                position: Vector2(obj.x, obj.y),
+                size: Vector2(obj.width, obj.height));
+            collisionBlocks
+                .add(block); //agg alla lista di modo che altrove posso usarli
+            add(block);
+        }
+      }
+    }
+    player.collisionBlocks = collisionBlocks;
     return super.onLoad();
   }
 }
