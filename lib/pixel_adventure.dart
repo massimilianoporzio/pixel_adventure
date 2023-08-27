@@ -5,9 +5,9 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pixel_adventure/levels/level.dart';
+import 'package:pixel_adventure/components/level.dart';
 
-import 'actors/player.dart';
+import 'components/player.dart';
 
 class PixelAdventure extends FlameGame
     with HasKeyboardHandlerComponents, DragCallbacks {
