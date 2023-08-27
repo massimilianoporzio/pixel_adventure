@@ -4,10 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Flame.device.fullScreen();
-  Flame.device.setLandscape();
+  await Flame.device
+      .fullScreen(); //ASYNC importante è per physical phone se no mette il joystick in posti sbagliati
+  await Flame.device.setLandscape();
   final game = PixelAdventure(); // per produzione
   runApp(GameWidget(game: kDebugMode ? PixelAdventure() : game));
 }

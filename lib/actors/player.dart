@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
@@ -25,6 +26,10 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation idleAnimation;
   late final SpriteAnimation runningAnimation;
 
+  bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.fuchsia ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
   //in che dirzione va il player
   PlayerDirection playerDirection = PlayerDirection.none;
   //verso dove guarda
@@ -35,25 +40,28 @@ class Player extends SpriteAnimationGroupComponent
 
   @override
   FutureOr<void> onLoad() async {
-    //gestisco il controller
-    final gamepads = await Gamepads.list();
-    if (gamepads.isNotEmpty) {
-      Gamepads.events.listen((event) {
-        if (event.type == KeyType.analog) {
-          final isLeft = event.key == "dwXpos" &&
-              event.value < 32767.0; //dip dal controller
-          final isRight = event.key == "dwXpos" &&
-              event.value > 32767.0; //dip dal controller
-          if (isLeft) {
-            playerDirection = PlayerDirection.left;
-          } else if (isRight) {
-            playerDirection = PlayerDirection.right;
-          } else {
-            playerDirection = PlayerDirection.none;
+    if (!isMobile) {
+//gestisco il controller
+      final gamepads = await Gamepads.list();
+      if (gamepads.isNotEmpty) {
+        Gamepads.events.listen((event) {
+          if (event.type == KeyType.analog) {
+            final isLeft = event.key == "dwXpos" &&
+                event.value < 32767.0; //dip dal controller
+            final isRight = event.key == "dwXpos" &&
+                event.value > 32767.0; //dip dal controller
+            if (isLeft) {
+              playerDirection = PlayerDirection.left;
+            } else if (isRight) {
+              playerDirection = PlayerDirection.right;
+            } else {
+              playerDirection = PlayerDirection.none;
+            }
           }
-        }
-      });
+        });
+      }
     }
+
     _loadAllAnimations();
     return super.onLoad();
   }
