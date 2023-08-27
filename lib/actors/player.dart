@@ -9,6 +9,8 @@ enum PlayerState {
   running,
 }
 
+enum PlayerDirection { left, right, none }
+
 class Player extends SpriteAnimationGroupComponent
     with HasGameRef<PixelAdventure> {
   final String character;
@@ -18,10 +20,25 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation idleAnimation;
   late final SpriteAnimation runningAnimation;
 
+  //in che dirzione va il player
+  PlayerDirection playerDirection = PlayerDirection.left;
+  //verso dove guarda
+  bool isFacingRight = true;
+
+  double moveSpeed = 100;
+  Vector2 velocity = Vector2.zero();
+
   @override
   FutureOr<void> onLoad() {
     _loadAllAnimations();
     return super.onLoad();
+  }
+
+  //chiamata ad OGNI frame
+  @override
+  void update(double dt) {
+    _updatePlayerMovement(dt);
+    super.update(dt);
   }
 
   void _loadAllAnimations() {
@@ -63,5 +80,33 @@ class Player extends SpriteAnimationGroupComponent
         textureSize: textureSize,
       ),
     );
+  }
+
+  void _updatePlayerMovement(double dt) {
+    double dirX = 0.0;
+    switch (playerDirection) {
+      case PlayerDirection.left:
+        if (isFacingRight) {
+          flipHorizontallyAroundCenter();
+          isFacingRight = false;
+        }
+        current = PlayerState.running;
+        dirX -= moveSpeed;
+        break;
+      case PlayerDirection.right:
+        if (!isFacingRight) {
+          flipHorizontallyAroundCenter();
+          isFacingRight = true;
+        }
+        current = PlayerState.running;
+        dirX += moveSpeed;
+        break;
+      case PlayerDirection.none:
+        current = PlayerState.idle;
+        break;
+      default:
+    }
+    velocity = Vector2(dirX, 0);
+    position += velocity * dt;
   }
 }
