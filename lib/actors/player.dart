@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flame/components.dart';
 import 'package:flutter/src/services/keyboard_key.g.dart';
 import 'package:flutter/src/services/raw_keyboard.dart';
+import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
@@ -31,7 +32,26 @@ class Player extends SpriteAnimationGroupComponent
   Vector2 velocity = Vector2.zero();
 
   @override
-  FutureOr<void> onLoad() {
+  FutureOr<void> onLoad() async {
+    //gestisco il controller
+    final gamepads = await Gamepads.list();
+    if (gamepads.isNotEmpty) {
+      Gamepads.events.listen((event) {
+        if (event.type == KeyType.analog) {
+          final isLeft = event.key == "dwXpos" &&
+              event.value < 32767.0; //dip dal controller
+          final isRight = event.key == "dwXpos" &&
+              event.value > 32767.0; //dip dal controller
+          if (isLeft) {
+            playerDirection = PlayerDirection.left;
+          } else if (isRight) {
+            playerDirection = PlayerDirection.right;
+          } else {
+            playerDirection = PlayerDirection.none;
+          }
+        }
+      });
+    }
     _loadAllAnimations();
     return super.onLoad();
   }
