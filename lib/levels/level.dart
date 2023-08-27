@@ -9,10 +9,9 @@ import 'package:pixel_adventure/constants/game_constants.dart';
 
 class LevelComponent extends World {
   final String levelName;
+  final Player player;
   late TiledComponent level;
-  LevelComponent({
-    required this.levelName,
-  });
+  LevelComponent({required this.levelName, required this.player});
 
   @override
   FutureOr<void> onLoad() async {
@@ -25,8 +24,7 @@ class LevelComponent extends World {
     for (var obj in objectsLayer!.objects) {
       switch (obj.class_) {
         case 'Player':
-          final player = Player(
-              character: kNinjaFrogName, position: Vector2(obj.x, obj.y));
+          player.position = Vector2(obj.x, obj.y);
           add(player);
           break;
 
