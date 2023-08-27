@@ -12,7 +12,7 @@ enum PlayerState {
   running,
 }
 
-enum PlayerDirection { left, right, none }
+//enum PlayerDirection { left, right, none }
 
 class Player extends SpriteAnimationGroupComponent
     with HasGameRef<PixelAdventure>, KeyboardHandler {
@@ -31,10 +31,10 @@ class Player extends SpriteAnimationGroupComponent
       defaultTargetPlatform == TargetPlatform.iOS;
 
   //in che dirzione va il player
-  PlayerDirection playerDirection = PlayerDirection.none;
+  //PlayerDirection playerDirection = PlayerDirection.none;
   //verso dove guarda
   bool isFacingRight = true;
-
+  double horizontalInput = 0; //da tastiera o gamepad/joystick
   double moveSpeed = 100;
   Vector2 velocity = Vector2.zero();
 
@@ -51,11 +51,11 @@ class Player extends SpriteAnimationGroupComponent
             final isRight = event.key == "dwXpos" &&
                 event.value > 32767.0; //dip dal controller
             if (isLeft) {
-              playerDirection = PlayerDirection.left;
+              horizontalInput = -1;
             } else if (isRight) {
-              playerDirection = PlayerDirection.right;
+              horizontalInput = 1;
             } else {
-              playerDirection = PlayerDirection.none;
+              horizontalInput = 0;
             }
           }
         });
@@ -69,26 +69,21 @@ class Player extends SpriteAnimationGroupComponent
   //chiamata ad OGNI frame
   @override
   void update(double dt) {
+    _updatePlayerState();
     _updatePlayerMovement(dt);
     super.update(dt);
   }
 
   @override
   bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    horizontalInput = 0; //default poi controllo
     final isLeftKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyA) ||
         keysPressed.contains(LogicalKeyboardKey.arrowLeft);
     final isRightKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyD) ||
         keysPressed.contains(LogicalKeyboardKey.arrowRight);
-    if (isLeftKeyPressed && isRightKeyPressed) {
-      playerDirection =
-          PlayerDirection.none; //premo sia sin sia dx...sto fermo!
-    } else if (isLeftKeyPressed) {
-      playerDirection = PlayerDirection.left;
-    } else if (isRightKeyPressed) {
-      playerDirection = PlayerDirection.right;
-    } else {
-      playerDirection = PlayerDirection.none;
-    }
+    horizontalInput += isLeftKeyPressed ? -1 : 0;
+    horizontalInput += isRightKeyPressed ? 1 : 0;
+    //se le premo entrambe add e tolgo 1
     return super.onKeyEvent(event, keysPressed);
   }
 
@@ -133,31 +128,24 @@ class Player extends SpriteAnimationGroupComponent
     );
   }
 
-  void _updatePlayerMovement(double dt) {
-    double dirX = 0.0;
-    switch (playerDirection) {
-      case PlayerDirection.left:
-        if (isFacingRight) {
-          flipHorizontallyAroundCenter();
-          isFacingRight = false;
-        }
-        current = PlayerState.running;
-        dirX -= moveSpeed;
-        break;
-      case PlayerDirection.right:
-        if (!isFacingRight) {
-          flipHorizontallyAroundCenter();
-          isFacingRight = true;
-        }
-        current = PlayerState.running;
-        dirX += moveSpeed;
-        break;
-      case PlayerDirection.none:
-        current = PlayerState.idle;
-        break;
-      default:
+  void _updatePlayerState() {
+    PlayerState playerState = PlayerState.idle; //fermo e poi controllo
+    if (velocity.x < 0 && scale.x > 0) {
+      flipHorizontallyAroundCenter();
+    } else if (velocity.x > 0 && scale.x < 0) {
+      flipHorizontallyAroundCenter(); //scale mi dice se guardo a dx o sin
     }
-    velocity = Vector2(dirX, 0);
-    position += velocity * dt;
+    if (velocity.x > 0 || velocity.x < 0) {
+      //si muove!
+      playerState = PlayerState.running;
+    } else {
+      playerState = PlayerState.idle;
+    }
+    current = playerState;
+  }
+
+  void _updatePlayerMovement(double dt) {
+    velocity.x = horizontalInput * moveSpeed;
+    position.x += velocity.x * dt; //vel lungo x
   }
 }
