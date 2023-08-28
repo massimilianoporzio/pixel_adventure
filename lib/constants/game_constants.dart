@@ -2,6 +2,10 @@
 const double kTileSize = 16.0;
 const double kStepTime = 0.06;
 const double kPlayerTileSize = 32.0;
+const double kScrollSpeed = 0.4;
+
+//BACKGROUND TILES
+const double kBackgroundTileSize = 64.0;
 
 //*CHARACTERS NAME
 const String kNinjaFrogName = "Ninja Frog";
