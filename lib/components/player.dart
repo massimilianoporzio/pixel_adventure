@@ -6,8 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
+import 'package:pixel_adventure/utils/utils.dart';
 
-import 'collision.dart';
+import 'collision_block.dart';
 
 enum PlayerState {
   idle,
@@ -48,7 +49,6 @@ class Player extends SpriteAnimationGroupComponent
     debugMode = true;
     if (!isMobile) {
       _setUpGamePad();
-//gestisco il controller
     }
 
     _loadAllAnimations();
@@ -81,6 +81,7 @@ class Player extends SpriteAnimationGroupComponent
   void update(double dt) {
     _updatePlayerState();
     _updatePlayerMovement(dt);
+    _checkHorizontalCollisions();
     super.update(dt);
   }
 
@@ -157,5 +158,27 @@ class Player extends SpriteAnimationGroupComponent
   void _updatePlayerMovement(double dt) {
     velocity.x = horizontalInput * moveSpeed;
     position.x += velocity.x * dt; //vel lungo x
+  }
+
+  void _checkHorizontalCollisions() {
+    //loop over collision block
+    for (final block in collisionBlocks) {
+      //handle collisions
+      //for platform non mi interessano le collisioni orizzontali
+      if (!block.isPlatform) {
+        if (checkCollision(this, block)) {
+          //*HERE COLLISION
+          if (velocity.x > 0) {
+            velocity.x = 0;
+            position.x = block.x - width;
+          }
+          if (velocity.x < 0) {
+            //sto andando a sinistra
+            velocity.x = 0;
+            position.x = block.x + block.width + width;
+          }
+        }
+      }
+    }
   }
 }
