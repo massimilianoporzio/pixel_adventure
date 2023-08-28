@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
+import 'package:pixel_adventure/components/player_hitbox.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 import 'package:pixel_adventure/utils/utils.dart';
@@ -13,6 +15,8 @@ import 'collision_block.dart';
 enum PlayerState {
   idle,
   running,
+  jumping,
+  falling,
 }
 
 //enum PlayerDirection { left, right, none }
@@ -22,12 +26,24 @@ class Player extends SpriteAnimationGroupComponent
   final String character;
   Player({
     position,
-    this.character = kNinjaFrogName,
+    required this.character,
   }) : super(position: position);
 
   //gruppi di animazioni non solo una!
   late final SpriteAnimation idleAnimation;
   late final SpriteAnimation runningAnimation;
+  late final SpriteAnimation jumpingAnimation;
+  late final SpriteAnimation fallingAnimation;
+
+  //suo hitbox
+  late PlayerHitBox hitbox;
+
+  //proprietà
+  final double _gravity = 9.8;
+  final double _jumpForce = 360;
+  final double _terminalVelocity = 300; //max vel di caduta
+  double moveSpeed = 100;
+  Vector2 velocity = Vector2.zero();
 
   bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.fuchsia ||
@@ -37,22 +53,38 @@ class Player extends SpriteAnimationGroupComponent
   //PlayerDirection playerDirection = PlayerDirection.none;
   //verso dove guarda
   bool isFacingRight = true;
+  bool isOnGround = false; //se poggia per terra
+  bool hasJumped = false; //se ha fatto un salto
+
+  //input da utente
   double horizontalInput = 0; //da tastiera o gamepad/joystick
-  double moveSpeed = 100;
-  Vector2 velocity = Vector2.zero();
+
   //anche il player ha un rif alla lista di blocchi di collisione
   List<CollisionBlock> collisionBlocks = [];
 
   @override
   FutureOr<void> onLoad() async {
     debugColor = const Color.fromARGB(255, 255, 128, 0);
-    debugMode = true;
+    debugMode = false;
     if (!isMobile) {
       _setUpGamePad();
     }
-
+    _buildHitBox(character: character);
+    add(RectangleHitbox(
+      position: Vector2(hitbox.offsetX, hitbox.offsetY),
+      size: Vector2(hitbox.width, hitbox.height),
+    ));
     _loadAllAnimations();
     return super.onLoad();
+  }
+
+  void _buildHitBox({required String character}) {
+    hitbox = PlayerHitBox(
+      offsetX: characterProps[character]['hitBox']['offsetX'],
+      offsetY: characterProps[character]['hitBox']['offsetY'],
+      width: characterProps[character]['hitBox']['width'],
+      height: characterProps[character]['hitBox']['height'],
+    );
   }
 
   void _setUpGamePad() async {
@@ -72,6 +104,9 @@ class Player extends SpriteAnimationGroupComponent
             horizontalInput = 0;
           }
         }
+        if (event.type == KeyType.button) {
+          hasJumped = event.value == 1.0;
+        }
       });
     }
   }
@@ -82,6 +117,10 @@ class Player extends SpriteAnimationGroupComponent
     _updatePlayerState();
     _updatePlayerMovement(dt);
     _checkHorizontalCollisions();
+    //gravity DOPO!
+    _applyGravity(dt);
+    //ora controllo in verticale
+    _checkVerticalCollisions();
     super.update(dt);
   }
 
@@ -95,6 +134,9 @@ class Player extends SpriteAnimationGroupComponent
     horizontalInput += isLeftKeyPressed ? -1 : 0;
     horizontalInput += isRightKeyPressed ? 1 : 0;
     //se le premo entrambe add e tolgo 1
+    //gestisco il salto
+    hasJumped = keysPressed.contains(LogicalKeyboardKey.space);
+
     return super.onKeyEvent(event, keysPressed);
   }
 
@@ -102,20 +144,41 @@ class Player extends SpriteAnimationGroupComponent
     idleAnimation = _getSpriteAnimation(
         characterName: character,
         state: 'Idle',
-        amountOfSprites: kIdleNinjaFrogSprites,
-        stepTime: kNinjaFrogIdleStepTime,
-        textureSize: Vector2.all(kNinjaFrogTileSize));
-
+        amountOfSprites: characterProps[character]['animations']['idle']
+            ['amountOfSprites'],
+        stepTime: characterProps[character]['animations']['idle']['stepTime'],
+        tileSize: characterProps[character]['tileSize']);
     runningAnimation = _getSpriteAnimation(
-        state: 'Run',
         characterName: character,
-        amountOfSprites: kRunningNinjaFrogSprites,
-        stepTime: kNinjaFrogRunningStepTime,
-        textureSize: Vector2.all(kNinjaFrogTileSize));
+        state: 'Run',
+        amountOfSprites: characterProps[character]['animations']['running']
+            ['amountOfSprites'],
+        stepTime: characterProps[character]['animations']['running']
+            ['stepTime'],
+        tileSize: characterProps[character]['tileSize']);
+    jumpingAnimation = _getSpriteAnimation(
+        characterName: character,
+        state: 'Jump',
+        amountOfSprites: characterProps[character]['animations']['jumping']
+            ['amountOfSprites'],
+        stepTime: characterProps[character]['animations']['jumping']
+            ['stepTime'],
+        tileSize: characterProps[character]['tileSize']);
+    fallingAnimation = _getSpriteAnimation(
+        characterName: character,
+        state: 'Fall',
+        amountOfSprites: characterProps[character]['animations']['falling']
+            ['amountOfSprites'],
+        stepTime: characterProps[character]['animations']['falling']
+            ['stepTime'],
+        tileSize: characterProps[character]['tileSize']);
+
     //lista delle animazioni disponib per ogni stato
     animations = {
       PlayerState.idle: idleAnimation,
-      PlayerState.running: runningAnimation
+      PlayerState.running: runningAnimation,
+      PlayerState.jumping: jumpingAnimation,
+      PlayerState.falling: fallingAnimation,
     };
     //animazione corrente (la setto!)
     current = PlayerState.idle;
@@ -126,15 +189,15 @@ class Player extends SpriteAnimationGroupComponent
     required String state,
     required int amountOfSprites,
     required double stepTime,
-    required Vector2 textureSize,
+    required double tileSize,
   }) {
     return SpriteAnimation.fromFrameData(
       game.images.fromCache(
-          'Main Characters/$characterName/$state (${textureSize[0].toInt()}x${textureSize[1].toInt()}).png'),
+          'Main Characters/$characterName/$state (${tileSize.toInt()}x${tileSize.toInt()}).png'),
       SpriteAnimationData.sequenced(
         amount: amountOfSprites,
         stepTime: stepTime,
-        textureSize: textureSize,
+        textureSize: Vector2.all(tileSize),
       ),
     );
   }
@@ -152,12 +215,34 @@ class Player extends SpriteAnimationGroupComponent
     } else {
       playerState = PlayerState.idle;
     }
+    //check if falling
+    if (velocity.y > 0) {
+      playerState = PlayerState.falling;
+    }
+    //check if jumping
+    if (velocity.y < 0) {
+      playerState = PlayerState.jumping;
+    }
     current = playerState;
   }
 
   void _updatePlayerMovement(double dt) {
+    if (hasJumped && isOnGround) {
+      _playerJump(dt);
+    }
+    //SERVE PER SALTARE ANCHE SE NON HO TOCCATO IL GROUND (OPZIONALE)
+    if (velocity.y > _gravity) {
+      isOnGround = true;
+    }
     velocity.x = horizontalInput * moveSpeed;
     position.x += velocity.x * dt; //vel lungo x
+  }
+
+  void _playerJump(double dt) {
+    velocity.y = -_jumpForce;
+    position.y += velocity.y * dt;
+    isOnGround = false; //non salta +
+    hasJumped = false;
   }
 
   void _checkHorizontalCollisions() {
@@ -167,15 +252,56 @@ class Player extends SpriteAnimationGroupComponent
       //for platform non mi interessano le collisioni orizzontali
       if (!block.isPlatform) {
         if (checkCollision(this, block)) {
-          //*HERE COLLISION
+          //*HERE COLLISION tengo conto del hitbox
           if (velocity.x > 0) {
             velocity.x = 0;
-            position.x = block.x - width;
+            position.x = block.x - hitbox.offsetX - hitbox.width;
+            break; //non guardo gli altri blocchi
           }
           if (velocity.x < 0) {
             //sto andando a sinistra
             velocity.x = 0;
-            position.x = block.x + block.width + width;
+            position.x = block.x + block.width + hitbox.offsetX + hitbox.width;
+            break; //non guardo gli altri blocchi
+          }
+        }
+      }
+    }
+  }
+
+  void _applyGravity(double dt) {
+    velocity.y += _gravity; //ogni dt aum costante
+    velocity.y = velocity.y.clamp(-_jumpForce,
+        _terminalVelocity); //mai + veloce del salto e + di terminalVel
+    position.y += velocity.y * dt;
+  }
+
+  void _checkVerticalCollisions() {
+    for (final block in collisionBlocks) {
+      if (block.isPlatform) {
+        //handle platform ci salgo da sotto ma poi ci resto sopra
+        if (checkCollision(this, block)) {
+          if (velocity.y > 0) {
+            //sto cadendo
+            velocity.y = 0; // ma poi aumenta con gravità
+            position.y = block.y - hitbox.height - hitbox.offsetY;
+            isOnGround = true;
+            break; //basta una collisione poi non guardo le restanti
+          }
+        }
+      } else {
+        if (checkCollision(this, block)) {
+          if (velocity.y > 0) {
+            //sto cadendo
+            velocity.y = 0; // ma poi aumenta con gravità
+            position.y = block.y - hitbox.height - hitbox.offsetY;
+            isOnGround = true;
+            break; //basta una collisione poi non guardo le restanti
+          }
+          if (velocity.y < 0) {
+            //JUMP
+            velocity.y = 0;
+            position.y = block.y + block.height - hitbox.offsetY;
           }
         }
       }
