@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/components/custom_hitbox.dart';
 import 'package:pixel_adventure/components/fruit.dart';
+import 'package:pixel_adventure/components/saw.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 import 'package:pixel_adventure/utils/utils.dart';
@@ -18,6 +19,7 @@ enum PlayerState {
   running,
   jumping,
   falling,
+  hit,
 }
 
 //enum PlayerDirection { left, right, none }
@@ -35,9 +37,13 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation runningAnimation;
   late final SpriteAnimation jumpingAnimation;
   late final SpriteAnimation fallingAnimation;
+  late final SpriteAnimation hitAnimation;
 
   //suo hitbox
   late CustomHitBox hitbox;
+
+  //posiz iniziale
+  Vector2 startingPosition = Vector2.zero();
 
   //proprietà
   final double _gravity = 9.8;
@@ -56,6 +62,7 @@ class Player extends SpriteAnimationGroupComponent
   bool isFacingRight = true;
   bool isOnGround = false; //se poggia per terra
   bool hasJumped = false; //se ha fatto un salto
+  bool gotHit = false;
 
   //input da utente
   double horizontalInput = 0; //da tastiera o gamepad/joystick
@@ -65,6 +72,7 @@ class Player extends SpriteAnimationGroupComponent
 
   @override
   FutureOr<void> onLoad() async {
+    startingPosition = Vector2(position.x, position.y);
     if (!isMobile) {
       _setUpGamePad();
     }
@@ -115,13 +123,16 @@ class Player extends SpriteAnimationGroupComponent
   //chiamata ad OGNI frame
   @override
   void update(double dt) {
-    _updatePlayerState();
-    _updatePlayerMovement(dt);
-    _checkHorizontalCollisions();
-    //gravity DOPO!
-    _applyGravity(dt);
-    //ora controllo in verticale
-    _checkVerticalCollisions();
+    if (!gotHit) {
+      _updatePlayerState();
+      _updatePlayerMovement(dt);
+      _checkHorizontalCollisions();
+      //gravity DOPO!
+      _applyGravity(dt);
+      //ora controllo in verticale
+      _checkVerticalCollisions();
+    }
+
     super.update(dt);
   }
 
@@ -146,6 +157,9 @@ class Player extends SpriteAnimationGroupComponent
     //WHEN My rectangle hit box collide with other rectangle hit box
     if (other is Fruit) {
       other.collidedWithPlayer();
+    } else if (other is Saw) {
+      //AHIA!
+      _respawn();
     }
     super.onCollision(intersectionPoints, other);
   }
@@ -182,6 +196,14 @@ class Player extends SpriteAnimationGroupComponent
         stepTime: characterProps[character]['animations']['falling']
             ['stepTime'],
         tileSize: characterProps[character]['tileSize']);
+    hitAnimation = _getSpriteAnimation(
+        characterName: character,
+        state: 'Hit',
+        amountOfSprites: characterProps[character]['animations']['hit']
+            ['amountOfSprites'],
+        loop: false,
+        stepTime: characterProps[character]['animations']['hit']['stepTime'],
+        tileSize: characterProps[character]['tileSize']);
 
     //lista delle animazioni disponib per ogni stato
     animations = {
@@ -189,6 +211,7 @@ class Player extends SpriteAnimationGroupComponent
       PlayerState.running: runningAnimation,
       PlayerState.jumping: jumpingAnimation,
       PlayerState.falling: fallingAnimation,
+      PlayerState.hit: hitAnimation,
     };
     //animazione corrente (la setto!)
     current = PlayerState.idle;
@@ -200,6 +223,7 @@ class Player extends SpriteAnimationGroupComponent
     required int amountOfSprites,
     required double stepTime,
     required double tileSize,
+    bool loop = true,
   }) {
     return SpriteAnimation.fromFrameData(
       game.images.fromCache(
@@ -207,6 +231,7 @@ class Player extends SpriteAnimationGroupComponent
       SpriteAnimationData.sequenced(
         amount: amountOfSprites,
         stepTime: stepTime,
+        loop: loop,
         textureSize: Vector2.all(tileSize),
       ),
     );
@@ -316,5 +341,19 @@ class Player extends SpriteAnimationGroupComponent
         }
       }
     }
+  }
+
+  void _respawn() {
+    const hitDuration = Duration(milliseconds: 350);
+    gotHit = true; //cosi non fa più update
+
+    //ANIMAZIONE E POI RIMETTO ALL'INIZIO
+    current = PlayerState.hit;
+    Future.delayed(hitDuration, () {
+      scale.x = 1.0;
+      position = startingPosition;
+      gotHit = false;
+    });
+    //position = startingPosition;
   }
 }

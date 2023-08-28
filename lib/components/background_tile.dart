@@ -13,7 +13,7 @@ class BackgroundTile extends SpriteComponent with HasGameRef<PixelAdventure> {
   @override
   FutureOr<void> onLoad() {
     priority = -1; //STA DIETRO!
-    size = Vector2.all(kBackgroundTileSize + 0.6);
+    size = Vector2.all(kBackgroundTileSize + 0.7);
     sprite = Sprite(game.images.fromCache('Background/$color.png'));
     return super.onLoad();
   }

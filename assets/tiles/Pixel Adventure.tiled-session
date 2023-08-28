@@ -18,8 +18,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 342,
-                "y": 208.5
+                "x": 270.5,
+                "y": 302.5
             }
         },
         "Level-02.tmx": {
@@ -47,6 +47,7 @@
         "Level-02.tmx"
     ],
     "project": "Pixel Adventure.tiled-project",
+    "property.type": "float",
     "recentFiles": [
         "Pixel Adventure.tsx",
         "Level-02.tmx",

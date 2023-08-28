@@ -1,11 +1,28 @@
 //GAME PROPS
-const double kTileSize = 16.0;
+const double kMapTileSize = 16.0;
 const double kStepTime = 0.06;
 const double kPlayerTileSize = 32.0;
 const double kScrollSpeed = 0.4;
 
 //BACKGROUND TILES
 const double kBackgroundTileSize = 64.0;
+
+//*TRAPS
+//SAW
+const String kSawName = "Saw";
+const int kSawAmountOfSprites = 8;
+const String kSawOnImage = "On (38x38).png";
+const double kSawTileSize = 38.0;
+const double kSawSpeed = 0.03;
+const int kSawMoveSpeed = 50;
+
+const Map<String, dynamic> sawProps = {
+  kSawName: {
+    'stepTime': kSawSpeed,
+    'textureSize': kSawTileSize,
+    'amountOfSprites': kSawAmountOfSprites,
+  },
+};
 
 //*FRUITS
 //names:
@@ -161,6 +178,10 @@ const Map<String, dynamic> characterProps = {
         'amountOfSprites': kFallingNinjaFrogSprites,
         'stepTime': kNinjaFrogFallingStepTime
       },
+      'hit': {
+        'amountOfSprites': kFallingNinjaFrogSprites,
+        'stepTime': kNinjaFrogFallingStepTime
+      },
     }
   },
   kMaskDudeName: {
@@ -187,6 +208,10 @@ const Map<String, dynamic> characterProps = {
       'falling': {
         'amountOfSprites': kFallingMaskDudeSprites,
         'stepTime': kMaskDudeFallingStepTime
+      },
+      'hit': {
+        'amountOfSprites': kHitMaskDudeSprites,
+        'stepTime': kMaskDudeHitStepTime
       },
     }
   },
@@ -215,6 +240,10 @@ const Map<String, dynamic> characterProps = {
         'amountOfSprites': kFallingPinkManSprites,
         'stepTime': kPinkManFallingStepTime
       },
+      'hit': {
+        'amountOfSprites': kHitPinkManSprites,
+        'stepTime': kPinkManHitStepTime
+      },
     }
   },
   kVirtualGuyName: {
@@ -242,6 +271,10 @@ const Map<String, dynamic> characterProps = {
         'amountOfSprites': kFallingVirtualGuySprites,
         'stepTime': kVirtualGuyFallingStepTime
       },
+      'hit': {
+        'amountOfSprites': kHitVirtualGuySprites,
+        'stepTime': kVirtualGuyHitStepTime
+      },
     }
   }
 };
@@ -260,6 +293,9 @@ const double kNinjaFrogJumpingStepTime = 0.05;
 //falling
 const int kFallingNinjaFrogSprites = 1;
 const double kNinjaFrogFallingStepTime = 0.05;
+//hit
+const int kHitNinjaFrogSprites = 7;
+const double kNinjaFrogHitStepTime = 0.05;
 
 //*MASK DUDE
 const double kMaskDudeTileSize = 32.0;
@@ -275,6 +311,9 @@ const double kMaskDudeJumpingStepTime = 0.05;
 //falling
 const int kFallingMaskDudeSprites = 1;
 const double kMaskDudeFallingStepTime = 0.05;
+//hit
+const int kHitMaskDudeSprites = 7;
+const double kMaskDudeHitStepTime = 0.05;
 
 //*PINK MAN
 const double kPinkManTileSize = 32.0;
@@ -290,6 +329,9 @@ const double kPinkManJumpingStepTime = 0.05;
 //falling
 const int kFallingPinkManSprites = 1;
 const double kPinkManFallingStepTime = 0.05;
+//hit
+const int kHitPinkManSprites = 7;
+const double kPinkManHitStepTime = 0.05;
 
 //*VIRTUAL GUY
 const double kVirtualGuyTileSize = 32.0;
@@ -305,3 +347,6 @@ const double kVirtualGuyJumpingStepTime = 0.05;
 //falling
 const int kFallingVirtualGuySprites = 1;
 const double kVirtualGuyFallingStepTime = 0.05;
+//hit
+const int kHitVirtualGuySprites = 7;
+const double kVirtualGuyHitStepTime = 0.05;

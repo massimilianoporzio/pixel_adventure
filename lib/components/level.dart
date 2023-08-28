@@ -11,6 +11,8 @@ import 'package:pixel_adventure/components/player.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
+import 'saw.dart';
+
 class LevelComponent extends World with HasGameRef<PixelAdventure> {
   final String levelName;
   final Player player;
@@ -20,7 +22,8 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
 
   @override
   FutureOr<void> onLoad() async {
-    level = await TiledComponent.load('$levelName.tmx', Vector2.all(kTileSize));
+    level =
+        await TiledComponent.load('$levelName.tmx', Vector2.all(kMapTileSize));
 
     add(level); //agg al gioco
 
@@ -75,7 +78,19 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
             );
             add(fruit);
             break;
-
+          case 'Saw':
+            final isVertical = obj.properties.getValue("isVertical");
+            final offsetNeg = obj.properties.getValue("offsetNeg");
+            final offsetPos = obj.properties.getValue("offsetPos");
+            final saw = Saw(
+              position: Vector2(obj.x, obj.y),
+              size: Vector2(obj.width, obj.height),
+              isVertical: isVertical,
+              offsetNeg: offsetNeg,
+              offsetPos: offsetPos,
+            );
+            add(saw);
+            break;
           default:
         }
       }
