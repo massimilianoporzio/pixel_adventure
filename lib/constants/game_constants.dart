@@ -7,16 +7,138 @@ const double kScrollSpeed = 0.4;
 //BACKGROUND TILES
 const double kBackgroundTileSize = 64.0;
 
-//*CHARACTERS NAME
+//*FRUITS
+//names:
+const String kAppleName = 'Apple';
+const String kBananasName = 'Bananas';
+const String kCherriesName = 'Cherries';
+const String kCollectedName = 'Collected';
+const String kKiwiName = 'Kiwi';
+const String kMelonName = 'Melon';
+const String kOrangeName = 'Orange';
+const String kPineappleName = 'Pineapple';
+const String kStrawberryName = 'Strawberry';
+
+//comuni ma potrei averne diverse ad ogni frutto
+const double kFruitStepTime = 0.035;
+const double kFruitTileSize = 32.0;
+const int kFruitAmountOfSprite = 17;
+const int kCollectedAmountOfSprite = 6;
+
+//props for every fruit
+const Map<String, dynamic> fruitProps = {
+  kAppleName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kBananasName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kCherriesName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kCollectedName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kCollectedAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kKiwiName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kMelonName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kOrangeName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kPineappleName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+  kStrawberryName: {
+    'stepTime': kFruitStepTime,
+    'textureSize': kFruitTileSize,
+    'amountOfSprites': kFruitAmountOfSprite,
+    'hitbox': {
+      'offsetX': 10.0,
+      'offsetY': 10.0,
+      'width': 12.0,
+      'height': 12.0,
+    },
+  },
+};
+
+//*CHARACTERS PROPS
+//NAMES
 const String kNinjaFrogName = "Ninja Frog";
 const String kMaskDudeName = "Mask Dude";
 const String kPinkManName = "Pink Man";
 const String kVirtualGuyName = "Virtual Guy";
-
+//PROPERTIES
 const Map<String, dynamic> characterProps = {
   kNinjaFrogName: {
     'tileSize': kNinjaFrogTileSize,
-    'hitBox': {
+    'hitbox': {
       'offsetX': 10.0,
       'offsetY': 4.0,
       'width': 14.0,
@@ -43,7 +165,7 @@ const Map<String, dynamic> characterProps = {
   },
   kMaskDudeName: {
     'tileSize': kMaskDudeTileSize,
-    'hitBox': {
+    'hitbox': {
       'offsetX': 10.0,
       'offsetY': 4.0,
       'width': 14.0,
@@ -70,7 +192,7 @@ const Map<String, dynamic> characterProps = {
   },
   kPinkManName: {
     'tileSize': kPinkManTileSize,
-    'hitBox': {
+    'hitbox': {
       'offsetX': 10.0,
       'offsetY': 4.0,
       'width': 14.0,
@@ -97,7 +219,7 @@ const Map<String, dynamic> characterProps = {
   },
   kVirtualGuyName: {
     'tileSize': kVirtualGuyTileSize,
-    'hitBox': {
+    'hitbox': {
       'offsetX': 10.0,
       'offsetY': 4.0,
       'width': 14.0,

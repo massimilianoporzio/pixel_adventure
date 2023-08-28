@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:pixel_adventure/components/background_tile.dart';
 import 'package:pixel_adventure/components/collision_block.dart';
+import 'package:pixel_adventure/components/fruit.dart';
 
 import 'package:pixel_adventure/components/player.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
@@ -64,6 +65,15 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
           case 'Player':
             player.position = Vector2(obj.x, obj.y);
             add(player);
+            break;
+          case 'Fruit':
+            final fruit = Fruit(
+              position: Vector2(obj.x, obj.y),
+              size: Vector2(obj.width, obj.height),
+              fruitName:
+                  obj.name, //presuppone che su Tiled il nome sia corretto!!!
+            );
+            add(fruit);
             break;
 
           default:

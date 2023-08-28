@@ -5,7 +5,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
-import 'package:pixel_adventure/components/player_hitbox.dart';
+import 'package:pixel_adventure/components/custom_hitbox.dart';
+import 'package:pixel_adventure/components/fruit.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 import 'package:pixel_adventure/utils/utils.dart';
@@ -22,7 +23,7 @@ enum PlayerState {
 //enum PlayerDirection { left, right, none }
 
 class Player extends SpriteAnimationGroupComponent
-    with HasGameRef<PixelAdventure>, KeyboardHandler {
+    with HasGameRef<PixelAdventure>, KeyboardHandler, CollisionCallbacks {
   final String character;
   Player({
     position,
@@ -36,7 +37,7 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation fallingAnimation;
 
   //suo hitbox
-  late PlayerHitBox hitbox;
+  late CustomHitBox hitbox;
 
   //proprietà
   final double _gravity = 9.8;
@@ -64,8 +65,6 @@ class Player extends SpriteAnimationGroupComponent
 
   @override
   FutureOr<void> onLoad() async {
-    debugColor = const Color.fromARGB(255, 255, 128, 0);
-    debugMode = false;
     if (!isMobile) {
       _setUpGamePad();
     }
@@ -73,17 +72,19 @@ class Player extends SpriteAnimationGroupComponent
     add(RectangleHitbox(
       position: Vector2(hitbox.offsetX, hitbox.offsetY),
       size: Vector2(hitbox.width, hitbox.height),
-    ));
+    )
+      ..debugColor = const Color.fromARGB(255, 255, 128, 0)
+      ..debugMode = false);
     _loadAllAnimations();
     return super.onLoad();
   }
 
   void _buildHitBox({required String character}) {
-    hitbox = PlayerHitBox(
-      offsetX: characterProps[character]['hitBox']['offsetX'],
-      offsetY: characterProps[character]['hitBox']['offsetY'],
-      width: characterProps[character]['hitBox']['width'],
-      height: characterProps[character]['hitBox']['height'],
+    hitbox = CustomHitBox(
+      offsetX: characterProps[character]['hitbox']['offsetX'],
+      offsetY: characterProps[character]['hitbox']['offsetY'],
+      width: characterProps[character]['hitbox']['width'],
+      height: characterProps[character]['hitbox']['height'],
     );
   }
 
@@ -138,6 +139,15 @@ class Player extends SpriteAnimationGroupComponent
     hasJumped = keysPressed.contains(LogicalKeyboardKey.space);
 
     return super.onKeyEvent(event, keysPressed);
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    //WHEN My rectangle hit box collide with other rectangle hit box
+    if (other is Fruit) {
+      other.collidedWithPlayer();
+    }
+    super.onCollision(intersectionPoints, other);
   }
 
   void _loadAllAnimations() {

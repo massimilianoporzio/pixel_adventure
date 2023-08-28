@@ -10,7 +10,7 @@ import 'package:pixel_adventure/components/level.dart';
 import 'components/player.dart';
 
 class PixelAdventure extends FlameGame
-    with HasKeyboardHandlerComponents, DragCallbacks {
+    with HasKeyboardHandlerComponents, DragCallbacks, HasCollisionDetection {
   bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.fuchsia ||
       defaultTargetPlatform == TargetPlatform.iOS;
