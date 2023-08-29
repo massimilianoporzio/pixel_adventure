@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
+import 'package:pixel_adventure/components/checkpoint.dart';
 import 'package:pixel_adventure/components/custom_hitbox.dart';
 import 'package:pixel_adventure/components/fruit.dart';
 import 'package:pixel_adventure/components/saw.dart';
@@ -42,7 +43,7 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation hitAnimation;
 
   late final SpriteAnimation appearingAnimation;
-  late final SpriteAnimation desappearingAnimation;
+  late final SpriteAnimation disappearingAnimation;
 
   //suo hitbox
   late CustomHitBox hitbox;
@@ -60,6 +61,10 @@ class Player extends SpriteAnimationGroupComponent
   double moveSpeed = 100;
   Vector2 velocity = Vector2.zero();
 
+  //per i vari dispositivi con frame rate diversi
+  double fixedDeltaTime = 1 / 60; //60FPS per tutti
+  double accumulatedTime = 0;
+
   bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.fuchsia ||
       defaultTargetPlatform == TargetPlatform.iOS;
@@ -70,7 +75,9 @@ class Player extends SpriteAnimationGroupComponent
   bool isFacingRight = true;
   bool isOnGround = false; //se poggia per terra
   bool hasJumped = false; //se ha fatto un salto
-  bool gotHit = false;
+  bool gotHit = false; //colpito
+
+  bool reachedCheckpoint = false;
 
   //input da utente
   double horizontalInput = 0; //da tastiera o gamepad/joystick
@@ -132,14 +139,19 @@ class Player extends SpriteAnimationGroupComponent
   //chiamata ad OGNI frame
   @override
   void update(double dt) {
-    if (!gotHit) {
-      _updatePlayerState();
-      _updatePlayerMovement(dt);
-      _checkHorizontalCollisions();
-      //gravity DOPO!
-      _applyGravity(dt);
-      //ora controllo in verticale
-      _checkVerticalCollisions();
+    accumulatedTime += dt; //quanti frame passati
+    while (accumulatedTime >= fixedDeltaTime) {
+//faccio update SOLO se non ho colpito saw e non ho ragg la bandiera
+      if (!gotHit && !reachedCheckpoint) {
+        _updatePlayerState();
+        _updatePlayerMovement(fixedDeltaTime);
+        _checkHorizontalCollisions();
+        //gravity DOPO!
+        _applyGravity(fixedDeltaTime);
+        //ora controllo in verticale
+        _checkVerticalCollisions();
+      }
+      accumulatedTime -= fixedDeltaTime; //sottraggo e ricomincio
     }
 
     super.update(dt);
@@ -162,15 +174,19 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    //WHEN My rectangle hit box collide with other rectangle hit box
-    if (other is Fruit) {
-      other.collidedWithPlayer();
-    } else if (other is Saw) {
-      //AHIA!
-      _respawn();
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (!reachedCheckpoint) {
+      if (other is Fruit) {
+        other.collidedWithPlayer();
+      } else if (other is Saw) {
+        //AHIA!
+        _respawn();
+      } else if (other is CheckPoint && !reachedCheckpoint) {
+        _reachedCheckpoint();
+      }
     }
-    super.onCollision(intersectionPoints, other);
+    super.onCollisionStart(intersectionPoints, other);
   }
 
   void _loadAllAnimations() {
@@ -210,7 +226,7 @@ class Player extends SpriteAnimationGroupComponent
         state: 'Hit',
         amountOfSprites: characterProps[character]['animations']['hit']
             ['amountOfSprites'],
-        loop: true,
+        loop: false,
         stepTime: characterProps[character]['animations']['hit']['stepTime'],
         tileSize: characterProps[character]['tileSize']);
 
@@ -220,11 +236,11 @@ class Player extends SpriteAnimationGroupComponent
       stepTime: kAppearingStepTime,
       tileSize: kAppearingTileSize,
     );
-    desappearingAnimation = _getSpecialSpriteAnimation(
-      animationName: kDesappearingName,
-      amountOfSprites: kDesappearingSprites,
-      stepTime: kDesappearingStepTime,
-      tileSize: kDesappearingTileSize,
+    disappearingAnimation = _getSpecialSpriteAnimation(
+      animationName: kDisappearingName,
+      amountOfSprites: kDisappearingSprites,
+      stepTime: kDisappearingStepTime,
+      tileSize: kDisappearingTileSize,
     );
 
     //lista delle animazioni disponib per ogni stato
@@ -235,7 +251,7 @@ class Player extends SpriteAnimationGroupComponent
       PlayerState.falling: fallingAnimation,
       PlayerState.hit: hitAnimation,
       PlayerState.appearing: appearingAnimation,
-      PlayerState.desappearing: desappearingAnimation,
+      PlayerState.desappearing: disappearingAnimation,
     };
     //animazione corrente (la setto!)
     current = PlayerState.idle;
@@ -246,7 +262,7 @@ class Player extends SpriteAnimationGroupComponent
     required int amountOfSprites,
     required double stepTime,
     required double tileSize,
-    bool loop = true,
+    bool loop = false,
   }) {
     return SpriteAnimation.fromFrameData(
       game.images.fromCache(
@@ -386,27 +402,51 @@ class Player extends SpriteAnimationGroupComponent
     }
   }
 
-  void _respawn() {
-    const hitDuration = Duration(milliseconds: 350);
-    const appearingDuration = Duration(milliseconds: 750);
-    //const canMoveDuration = Duration(milliseconds: 400);
+  void _respawn() async {
+    const canMoveDuration = Duration(milliseconds: 300);
     gotHit = true; //cosi non fa più update
 
     //ANIMAZIONE E POI RIMETTO ALL'INIZIO
     current = PlayerState.hit;
-    Future.delayed(hitDuration, () {
-      scale.x = 1.0;
+    await animationTicker?.completed;
+    animationTicker?.reset(); //resetta le animazioni
+    scale.x = 1.0;
+    position = startingPosition -
+        Vector2.all(kAppearingTileSize - 2 * characterTileSize);
+    current = PlayerState.appearing;
+    await animationTicker?.completed;
+    animationTicker?.reset(); //resetta le animazioni
+    velocity = Vector2.zero();
+    position = startingPosition;
+    _updatePlayerState();
+    Future.delayed(canMoveDuration, () => gotHit = false);
+  }
 
-      current = PlayerState.appearing;
-      position = startingPosition -
-          Vector2.all(kAppearingTileSize - 2 * characterTileSize);
-    });
-    Future.delayed(appearingDuration, () {
-      velocity = Vector2.zero();
-      position = startingPosition;
-      _updatePlayerState();
+  void _reachedCheckpoint() async {
+    reachedCheckpoint = true;
+    //animation desappearingù
+    if (scale.x > 0) {
+      position =
+          position - Vector2.all(kDisappearingTileSize - 2 * characterTileSize);
+    } else if (scale.x < 0) {
+      position = position +
+          Vector2(
+            kDisappearingTileSize - 2 * characterTileSize,
+            -(kDisappearingTileSize - 2 * characterTileSize),
+          );
+    }
 
-      gotHit = false;
-    });
+    current = PlayerState.desappearing;
+    const reachedCheckpointDuration =
+        Duration(milliseconds: 50 * kDisappearingSprites);
+    //mezzo secondo e poi rimuovo
+    await Future.delayed(reachedCheckpointDuration);
+    reachedCheckpoint = false;
+    position = Vector2.all(-640); //OFF SCREEN
+    const waitToChangeLevelDuration = Duration(seconds: 1);
+    await Future.delayed(waitToChangeLevelDuration);
+    //SWITCH LEVEL
+    print("CAMBIO LIVELLO");
+    game.loadNextLevel();
   }
 }

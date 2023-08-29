@@ -9,14 +9,12 @@ import 'player.dart';
 
 class CheckPoint extends SpriteAnimationComponent
     with HasGameRef, CollisionCallbacks {
-  bool playerReachedFlag = false;
   CheckPoint({super.position, super.size});
   @override
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (other is Player && !playerReachedFlag) {
+    if (other is Player) {
       _reachedCheckpoint();
-      playerReachedFlag = true;
     }
     super.onCollisionStart(intersectionPoints, other);
   }
@@ -42,7 +40,7 @@ class CheckPoint extends SpriteAnimationComponent
     return super.onLoad();
   }
 
-  void _reachedCheckpoint() {
+  Future<void> _reachedCheckpoint() async {
     //change animation
     animation = SpriteAnimation.fromFrameData(
       game.images
@@ -54,17 +52,16 @@ class CheckPoint extends SpriteAnimationComponent
         textureSize: Vector2.all(checkpointProps['flagOut']['textureSize']),
       ),
     );
-    final flagDuration = Duration(milliseconds: 50 * animation!.frames.length);
-    Future.delayed(flagDuration, () {
-      animation = SpriteAnimation.fromFrameData(
-        game.images
-            .fromCache('Items/Checkpoints/Checkpoint/$kCheckPointFlagIdleName'),
-        SpriteAnimationData.sequenced(
-          amount: checkpointProps['flagIdle']['amountOfSprites'],
-          stepTime: checkpointProps['flagIdle']['stepTime'],
-          textureSize: Vector2.all(checkpointProps['flagIdle']['textureSize']),
-        ),
-      );
-    });
+    await animationTicker?.completed;
+
+    animation = SpriteAnimation.fromFrameData(
+      game.images
+          .fromCache('Items/Checkpoints/Checkpoint/$kCheckPointFlagIdleName'),
+      SpriteAnimationData.sequenced(
+        amount: checkpointProps['flagIdle']['amountOfSprites'],
+        stepTime: checkpointProps['flagIdle']['stepTime'],
+        textureSize: Vector2.all(checkpointProps['flagIdle']['textureSize']),
+      ),
+    );
   }
 }

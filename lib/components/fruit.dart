@@ -19,7 +19,7 @@ class Fruit extends SpriteAnimationComponent
     super.size,
     this.fruitName = 'Apple',
   });
-  bool _collected = false;
+
   final double stepTime = kFruitStepTime;
 
   void _buildHitBox({required String fruitName}) {
@@ -57,22 +57,19 @@ class Fruit extends SpriteAnimationComponent
 
   //metodo chiamato quando player collide con fruit
   void collidedWithPlayer() async {
-    if (!_collected) {
-      //ANIMAZIONE
-      animation = SpriteAnimation.fromFrameData(
-          game.images.fromCache("Items/Fruits/$kCollectedName.png"),
-          SpriteAnimationData.sequenced(
-            amount: fruitProps[kCollectedName]['amountOfSprites'],
-            stepTime: fruitProps[kCollectedName]['stepTime'],
-            loop: false,
-            textureSize: Vector2.all(
-              fruitProps[kCollectedName]['textureSize'],
-            ),
-          ));
-      _collected = true;
-      //mezzo secondo e poi rimuovo
-      await Future.delayed(const Duration(milliseconds: 500));
-      removeFromParent();
-    }
+    //ANIMAZIONE
+    animation = SpriteAnimation.fromFrameData(
+        game.images.fromCache("Items/Fruits/$kCollectedName.png"),
+        SpriteAnimationData.sequenced(
+          amount: fruitProps[kCollectedName]['amountOfSprites'],
+          stepTime: fruitProps[kCollectedName]['stepTime'],
+          loop: false,
+          textureSize: Vector2.all(
+            fruitProps[kCollectedName]['textureSize'],
+          ),
+        ));
+
+    await animationTicker?.completed;
+    removeFromParent();
   }
 }

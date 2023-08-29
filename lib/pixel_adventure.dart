@@ -5,12 +5,17 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pixel_adventure/components/jump_button.dart';
 import 'package:pixel_adventure/components/level.dart';
 
 import 'components/player.dart';
 
 class PixelAdventure extends FlameGame
-    with HasKeyboardHandlerComponents, DragCallbacks, HasCollisionDetection {
+    with
+        HasKeyboardHandlerComponents,
+        DragCallbacks,
+        HasCollisionDetection,
+        TapCallbacks {
   bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.fuchsia ||
       defaultTargetPlatform == TargetPlatform.iOS;
@@ -18,27 +23,25 @@ class PixelAdventure extends FlameGame
   @override
   Color backgroundColor() => const Color(0xFF211F30);
   //perché mi faccia vedere qualcosa serve una camera
-  late final CameraComponent cam;
+  late CameraComponent cam;
   Player player = Player(character: 'Mask Dude');
   late JoystickComponent joystick;
-  bool showJoystick = false;
+  late JumpButton jumpButton;
+  bool showControls = false;
+  List<String> levelNames = ['Level-01', 'Level-01'];
+  int currentLevelIndex = 0;
 
   @override
   FutureOr<void> onLoad() async {
     //check se è su mobile
-    showJoystick = isMobile;
+    showControls = isMobile;
     //LOAD ALL in cache..se troppe faccio solo load una alla vola quelle che servono per partire
     await images.loadAllImages();
-    //definisco il mondo con un livello e un giocatore (dopo aver caricato le immaggini)
-    final world = LevelComponent(levelName: 'Level-01', player: player);
-    //640x368 sono le dim della mappa in Tiled
-    cam = CameraComponent.withFixedResolution(
-        width: 640, height: 360, world: world)
-      ..viewfinder.anchor = Anchor.topLeft;
-    addAll([cam, world]);
+    _loadLevel();
 
-    if (showJoystick) {
+    if (showControls) {
       addJoystick();
+      addJumpBotton();
     }
 
     return super.onLoad();
@@ -46,7 +49,7 @@ class PixelAdventure extends FlameGame
 
   @override
   void update(double dt) {
-    if (showJoystick) {
+    if (showControls) {
       _updateJoystick();
     }
 
@@ -55,6 +58,7 @@ class PixelAdventure extends FlameGame
 
   void addJoystick() {
     joystick = JoystickComponent(
+      priority: 10, //davanti a tutti
       knob: SpriteComponent(
         sprite: Sprite(
           images.fromCache('HUD/Knob.png'),
@@ -90,5 +94,37 @@ class PixelAdventure extends FlameGame
         player.horizontalInput = 0;
         break;
     }
+  }
+
+  void loadNextLevel() {
+    removeWhere(
+        (component) => component is LevelComponent); //rimuovo il livello
+    if (currentLevelIndex < levelNames.length - 1) {
+      currentLevelIndex++;
+      _loadLevel();
+    } else {
+      //NO MORE LEVELS
+    }
+  }
+
+  void _loadLevel() {
+    Future.delayed(const Duration(seconds: 1), () {
+//definisco il mondo con un livello e un giocatore (dopo aver caricato le immaggini)
+      LevelComponent world = LevelComponent(
+        levelName: levelNames[currentLevelIndex],
+        player: player,
+      );
+
+      //640x368 sono le dim della mappa in Tiled
+      cam = CameraComponent.withFixedResolution(
+          width: 638.1, height: 360, world: world)
+        ..viewfinder.anchor = Anchor.topLeft;
+      addAll([cam, world]);
+    });
+  }
+
+  void addJumpBotton() {
+    jumpButton = JumpButton();
+    add(jumpButton);
   }
 }

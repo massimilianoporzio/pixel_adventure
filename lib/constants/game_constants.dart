@@ -2,7 +2,7 @@
 const double kMapTileSize = 16.0;
 const double kStepTime = 0.06;
 const double kPlayerTileSize = 32.0;
-const double kScrollSpeed = 0.4;
+const double kScrollSpeed = 40;
 
 //BACKGROUND TILES
 const double kBackgroundTileSize = 64.0;
@@ -69,7 +69,7 @@ const String kPineappleName = 'Pineapple';
 const String kStrawberryName = 'Strawberry';
 
 //comuni ma potrei averne diverse ad ogni frutto
-const double kFruitStepTime = 0.035;
+const double kFruitStepTime = 0.028;
 const double kFruitTileSize = 32.0;
 const int kFruitAmountOfSprite = 17;
 const int kCollectedAmountOfSprite = 6;
@@ -190,10 +190,10 @@ const Map<String, dynamic> characterProps = {
     'amountOfSprites': kAppearingSprites,
     'stepTime': kAppearingStepTime,
   },
-  kDesappearingName: {
-    'tileSize': kDesappearingTileSize,
-    'amountOfSprites': kDesappearingSprites,
-    'stepTime': kDesappearingStepTime,
+  kDisappearingName: {
+    'tileSize': kDisappearingTileSize,
+    'amountOfSprites': kDisappearingSprites,
+    'stepTime': kDisappearingStepTime,
   },
   kNinjaFrogName: {
     'tileSize': kNinjaFrogTileSize,
@@ -327,10 +327,10 @@ const double kAppearingTileSize = 96.0;
 const int kAppearingSprites = 7;
 const double kAppearingStepTime = 0.05;
 
-const String kDesappearingName = 'Desappearing';
-const double kDesappearingTileSize = 96.0;
-const int kDesappearingSprites = 7;
-const double kDesappearingStepTime = 0.05;
+const String kDisappearingName = 'Desappearing'; //spell error on assets...
+const double kDisappearingTileSize = 96.0;
+const int kDisappearingSprites = 7;
+const double kDisappearingStepTime = 0.05;
 
 //*NINJA FROG
 const double kNinjaFrogTileSize = 32.0;

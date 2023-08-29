@@ -10,5 +10,7 @@ void main() async {
       .fullScreen(); //ASYNC importante è per physical phone se no mette il joystick in posti sbagliati
   await Flame.device.setLandscape();
   final game = PixelAdventure(); // per produzione
-  runApp(GameWidget(game: kDebugMode ? PixelAdventure() : game));
+  runApp(
+    GameWidget(game: kDebugMode ? PixelAdventure() : game),
+  );
 }

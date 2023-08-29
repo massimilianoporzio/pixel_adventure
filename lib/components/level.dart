@@ -38,24 +38,15 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
   void _scrollingBackground() {
     final backgroundLayer =
         level.tileMap.getLayer("Background"); //non è un objectGroup
-    const tileSize = kBackgroundTileSize;
-    final numTilesY = (game.size.y / tileSize).floor();
-    final numTilesX = (game.size.x / tileSize).floor();
+
     if (backgroundLayer != null) {
       final String? backgroundColor =
           backgroundLayer.properties.getValue("backgroundColor");
-      for (var y = 0; y <= numTilesY; y++) {
-        //<= per non lasciare gap
-        for (var x = 0; x < numTilesX; x++) {
-          final backGroundTile = BackgroundTile(
-              color: backgroundColor ?? 'Gray',
-              position: Vector2(
-                  x * tileSize - tileSize,
-                  y * tileSize -
-                      tileSize)); //il meno è per far partire un po' prima della camera e non vederlo subito scrollare
-          add(backGroundTile);
-        }
-      }
+      final backgroundTile = BackgroundTile(
+        color: backgroundColor ?? "Gray",
+        position: Vector2.zero(),
+      );
+      add(backgroundTile);
     }
   }
 
@@ -68,6 +59,7 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
         switch (obj.class_) {
           case 'Player':
             player.position = Vector2(obj.x, obj.y);
+            player.scale.x = 1.0; //sempre a dx
             add(player);
             break;
           case 'Fruit':
