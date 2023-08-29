@@ -42,6 +42,7 @@ class Saw extends SpriteAnimationComponent with HasGameRef<PixelAdventure> {
         textureSize: Vector2.all(sawProps[kSawName]['textureSize']),
       ),
     );
+    animation = animation!.reversed();
     return super.onLoad();
   }
 

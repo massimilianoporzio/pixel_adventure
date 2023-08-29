@@ -389,24 +389,24 @@ class Player extends SpriteAnimationGroupComponent
   void _respawn() {
     const hitDuration = Duration(milliseconds: 350);
     const appearingDuration = Duration(milliseconds: 750);
-    const canMoveDuration = Duration(milliseconds: 400);
+    //const canMoveDuration = Duration(milliseconds: 400);
     gotHit = true; //cosi non fa più update
 
     //ANIMAZIONE E POI RIMETTO ALL'INIZIO
     current = PlayerState.hit;
     Future.delayed(hitDuration, () {
       scale.x = 1.0;
+
+      current = PlayerState.appearing;
       position = startingPosition -
           Vector2.all(kAppearingTileSize - 2 * characterTileSize);
-      current = PlayerState.appearing;
     });
     Future.delayed(appearingDuration, () {
       velocity = Vector2.zero();
       position = startingPosition;
       _updatePlayerState();
-      Future.delayed(canMoveDuration, () {
-        gotHit = false;
-      });
+
+      gotHit = false;
     });
   }
 }
