@@ -153,6 +153,16 @@ const String kPinkManName = "Pink Man";
 const String kVirtualGuyName = "Virtual Guy";
 //PROPERTIES
 const Map<String, dynamic> characterProps = {
+  kAppearingName: {
+    'tileSize': kAppearingTileSize,
+    'amountOfSprites': kAppearingSprites,
+    'stepTime': kAppearingStepTime,
+  },
+  kDesappearingName: {
+    'tileSize': kDesappearingTileSize,
+    'amountOfSprites': kDesappearingSprites,
+    'stepTime': kDesappearingStepTime,
+  },
   kNinjaFrogName: {
     'tileSize': kNinjaFrogTileSize,
     'hitbox': {
@@ -278,6 +288,17 @@ const Map<String, dynamic> characterProps = {
     }
   }
 };
+
+//*SPECIAL ANIMATIONS FOR ALL PLAYERS
+const String kAppearingName = 'Appearing';
+const double kAppearingTileSize = 96.0;
+const int kAppearingSprites = 7;
+const double kAppearingStepTime = 0.05;
+
+const String kDesappearingName = 'Desappearing';
+const double kDesappearingTileSize = 96.0;
+const int kDesappearingSprites = 7;
+const double kDesappearingStepTime = 0.05;
 
 //*NINJA FROG
 const double kNinjaFrogTileSize = 32.0;

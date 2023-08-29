@@ -20,6 +20,8 @@ enum PlayerState {
   jumping,
   falling,
   hit,
+  appearing,
+  desappearing,
 }
 
 //enum PlayerDirection { left, right, none }
@@ -39,8 +41,14 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation fallingAnimation;
   late final SpriteAnimation hitAnimation;
 
+  late final SpriteAnimation appearingAnimation;
+  late final SpriteAnimation desappearingAnimation;
+
   //suo hitbox
   late CustomHitBox hitbox;
+
+  //dimensione tile del personaggio
+  late final double characterTileSize;
 
   //posiz iniziale
   Vector2 startingPosition = Vector2.zero();
@@ -72,6 +80,7 @@ class Player extends SpriteAnimationGroupComponent
 
   @override
   FutureOr<void> onLoad() async {
+    characterTileSize = characterProps[character]['tileSize'];
     startingPosition = Vector2(position.x, position.y);
     if (!isMobile) {
       _setUpGamePad();
@@ -201,9 +210,22 @@ class Player extends SpriteAnimationGroupComponent
         state: 'Hit',
         amountOfSprites: characterProps[character]['animations']['hit']
             ['amountOfSprites'],
-        loop: false,
+        loop: true,
         stepTime: characterProps[character]['animations']['hit']['stepTime'],
         tileSize: characterProps[character]['tileSize']);
+
+    appearingAnimation = _getSpecialSpriteAnimation(
+      animationName: kAppearingName,
+      amountOfSprites: kAppearingSprites,
+      stepTime: kAppearingStepTime,
+      tileSize: kAppearingTileSize,
+    );
+    desappearingAnimation = _getSpecialSpriteAnimation(
+      animationName: kDesappearingName,
+      amountOfSprites: kDesappearingSprites,
+      stepTime: kDesappearingStepTime,
+      tileSize: kDesappearingTileSize,
+    );
 
     //lista delle animazioni disponib per ogni stato
     animations = {
@@ -212,9 +234,30 @@ class Player extends SpriteAnimationGroupComponent
       PlayerState.jumping: jumpingAnimation,
       PlayerState.falling: fallingAnimation,
       PlayerState.hit: hitAnimation,
+      PlayerState.appearing: appearingAnimation,
+      PlayerState.desappearing: desappearingAnimation,
     };
     //animazione corrente (la setto!)
     current = PlayerState.idle;
+  }
+
+  SpriteAnimation _getSpecialSpriteAnimation({
+    required String animationName,
+    required int amountOfSprites,
+    required double stepTime,
+    required double tileSize,
+    bool loop = true,
+  }) {
+    return SpriteAnimation.fromFrameData(
+      game.images.fromCache(
+          'Main Characters/$animationName (${tileSize.toInt()}x${tileSize.toInt()}).png'),
+      SpriteAnimationData.sequenced(
+        amount: amountOfSprites,
+        stepTime: stepTime,
+        loop: loop,
+        textureSize: Vector2.all(tileSize),
+      ),
+    );
   }
 
   SpriteAnimation _getSpriteAnimation({
@@ -345,15 +388,25 @@ class Player extends SpriteAnimationGroupComponent
 
   void _respawn() {
     const hitDuration = Duration(milliseconds: 350);
+    const appearingDuration = Duration(milliseconds: 750);
+    const canMoveDuration = Duration(milliseconds: 400);
     gotHit = true; //cosi non fa più update
 
     //ANIMAZIONE E POI RIMETTO ALL'INIZIO
     current = PlayerState.hit;
     Future.delayed(hitDuration, () {
       scale.x = 1.0;
-      position = startingPosition;
-      gotHit = false;
+      position = startingPosition -
+          Vector2.all(kAppearingTileSize - 2 * characterTileSize);
+      current = PlayerState.appearing;
     });
-    //position = startingPosition;
+    Future.delayed(appearingDuration, () {
+      velocity = Vector2.zero();
+      position = startingPosition;
+      _updatePlayerState();
+      Future.delayed(canMoveDuration, () {
+        gotHit = false;
+      });
+    });
   }
 }
