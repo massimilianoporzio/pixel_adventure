@@ -178,6 +178,17 @@ class Player extends SpriteAnimationGroupComponent
       Set<Vector2> intersectionPoints, PositionComponent other) {
     if (!reachedCheckpoint) {
       if (other is Fruit) {
+        String fruitName = other.fruitName;
+        int addedScore = 0;
+        switch (fruitName) {
+          case 'Apple':
+            addedScore = 2;
+            break;
+          default:
+            addedScore = 1;
+            break;
+        }
+        game.playerData.score.value = game.playerData.score.value + addedScore;
         other.collidedWithPlayer();
       } else if (other is Saw) {
         //AHIA!
@@ -413,6 +424,8 @@ class Player extends SpriteAnimationGroupComponent
     scale.x = 1.0;
     position = startingPosition -
         Vector2.all(kAppearingTileSize - 2 * characterTileSize);
+    //RIMETTO SCORE A ZERO
+    game.playerData.score.value = 0;
     current = PlayerState.appearing;
     await animationTicker?.completed;
     animationTicker?.reset(); //resetta le animazioni

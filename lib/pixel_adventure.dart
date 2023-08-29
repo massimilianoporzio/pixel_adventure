@@ -7,7 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pixel_adventure/components/jump_button.dart';
 import 'package:pixel_adventure/components/level.dart';
+import 'package:pixel_adventure/components/models/player_data.dart';
 
+import 'components/hud.dart';
 import 'components/player.dart';
 
 class PixelAdventure extends FlameGame
@@ -16,6 +18,8 @@ class PixelAdventure extends FlameGame
         DragCallbacks,
         HasCollisionDetection,
         TapCallbacks {
+  //per ora gestisco qui globalmente
+  final playerData = PlayerData();
   bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.fuchsia ||
       defaultTargetPlatform == TargetPlatform.iOS;
@@ -27,6 +31,7 @@ class PixelAdventure extends FlameGame
   Player player = Player(character: 'Mask Dude');
   late JoystickComponent joystick;
   late JumpButton jumpButton;
+  late Hud hud;
   bool showControls = false;
   List<String> levelNames = ['Level-01', 'Level-01'];
   int currentLevelIndex = 0;
@@ -35,6 +40,7 @@ class PixelAdventure extends FlameGame
   FutureOr<void> onLoad() async {
     //check se è su mobile
     showControls = isMobile;
+
     //LOAD ALL in cache..se troppe faccio solo load una alla vola quelle che servono per partire
     await images.loadAllImages();
     _loadLevel();
@@ -73,7 +79,7 @@ class PixelAdventure extends FlameGame
         left: 16,
         bottom: 16,
       ),
-    );
+    )..scale = Vector2.all(1.4);
     add(joystick);
   }
 
@@ -97,8 +103,8 @@ class PixelAdventure extends FlameGame
   }
 
   void loadNextLevel() {
-    removeWhere(
-        (component) => component is LevelComponent); //rimuovo il livello
+    removeWhere((component) =>
+        component is LevelComponent); //rimuovo il livello e l'hud
     if (currentLevelIndex < levelNames.length - 1) {
       currentLevelIndex++;
       _loadLevel();
@@ -119,6 +125,7 @@ class PixelAdventure extends FlameGame
       cam = CameraComponent.withFixedResolution(
           width: 638.1, height: 360, world: world)
         ..viewfinder.anchor = Anchor.topLeft;
+      cam.viewport.add(Hud());
       addAll([cam, world]);
     });
   }
