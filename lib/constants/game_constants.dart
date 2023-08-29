@@ -24,6 +24,38 @@ const Map<String, dynamic> sawProps = {
   },
 };
 
+//*CHECKPOINTS
+//CHECKPOINT
+const String kCheckPointNoFlagName = 'Checkpoint (No Flag).png';
+const double kCheckPointNoFlagStepTime = 1;
+const int kCheckPoinNoFlagAmountOfSprites = 1;
+const double kCheckPointTileSize = 64.0;
+const String kCheckPointFlagIdleName = 'Checkpoint (Flag Idle)(64x64).png';
+const int kCheckPointFlagIdleAmountOfSprites = 10;
+const double kCheckPointFlagIdleStepTime = 0.05;
+
+const String kCheckPointFlagOutName = 'Checkpoint (Flag Out) (64x64).png';
+const int kCheckPointFlagOutAmountOfSprites = 26;
+const double kCheckPointFlagOutStepTime = 0.05;
+
+const Map<String, dynamic> checkpointProps = {
+  'noFlag': {
+    'stepTime': kCheckPointNoFlagStepTime,
+    'textureSize': kCheckPointTileSize,
+    'amountOfSprites': kCheckPoinNoFlagAmountOfSprites,
+  },
+  'flagIdle': {
+    'stepTime': kCheckPointFlagIdleStepTime,
+    'textureSize': kCheckPointTileSize,
+    'amountOfSprites': kCheckPointFlagIdleAmountOfSprites,
+  },
+  'flagOut': {
+    'stepTime': kCheckPointFlagOutStepTime,
+    'textureSize': kCheckPointTileSize,
+    'amountOfSprites': kCheckPointFlagOutAmountOfSprites,
+  },
+};
+
 //*FRUITS
 //names:
 const String kAppleName = 'Apple';
