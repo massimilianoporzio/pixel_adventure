@@ -33,6 +33,8 @@ class PixelAdventure extends FlameGame
   late JumpButton jumpButton;
   late Hud hud;
   bool showControls = false;
+  bool playSounds = false;
+  double soundVolume = 1.0;
   List<String> levelNames = ['Level-01', 'Level-01'];
   int currentLevelIndex = 0;
 
@@ -110,6 +112,9 @@ class PixelAdventure extends FlameGame
       _loadLevel();
     } else {
       //NO MORE LEVELS
+      currentLevelIndex = 0;
+      playerData.score.value = 0;
+      _loadLevel(); //riparto dal livello 1
     }
   }
 
@@ -120,13 +125,13 @@ class PixelAdventure extends FlameGame
         levelName: levelNames[currentLevelIndex],
         player: player,
       );
-
+      add(world);
       //640x368 sono le dim della mappa in Tiled
       cam = CameraComponent.withFixedResolution(
           width: 638.1, height: 360, world: world)
         ..viewfinder.anchor = Anchor.topLeft;
       cam.viewport.add(Hud());
-      addAll([cam, world]);
+      add(cam);
     });
   }
 

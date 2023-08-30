@@ -192,6 +192,8 @@ class Player extends SpriteAnimationGroupComponent
         other.collidedWithPlayer();
       } else if (other is Saw) {
         //AHIA!
+        game.playerData.health.value = game.playerData.health.value - 1;
+        game.playerData.score.value = 0; //resetto
         _respawn();
       } else if (other is CheckPoint && !reachedCheckpoint) {
         _reachedCheckpoint();
