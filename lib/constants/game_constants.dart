@@ -183,7 +183,7 @@ const Map<String, dynamic> fruitProps = {
 //NAMES
 const String kChickenName = "Chicken";
 
-const double kChickenSpeed = 120;
+const double kChickenSpeed = 90;
 
 final Vector2 kChickenTileSize = Vector2(32, 34);
 const double kChickenIdleStepTime = 0.055;
