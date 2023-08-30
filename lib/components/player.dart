@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:pixel_adventure/components/checkpoint.dart';
 import 'package:pixel_adventure/components/custom_hitbox.dart';
+import 'package:pixel_adventure/components/enemies/chicken.dart';
 import 'package:pixel_adventure/components/fruit.dart';
 import 'package:pixel_adventure/components/saw.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
@@ -191,22 +192,23 @@ class Player extends SpriteAnimationGroupComponent
         }
         game.playerData.score.value = game.playerData.score.value + addedScore;
         other.collidedWithPlayer();
-      } else if (other is Saw) {
-        //AHIA!
+      }
+      if (other is Saw) {
+        //AHIA! LO SCORE LO MANTENGO PERò
         if (game.playerData.health.value != 0) {
           game.playerData.health.value = game.playerData.health.value - 1;
         }
         if (game.playerData.health.value == 0) {
-          game.playerData.score.value = 0; //resetto
+          //mantengo score
           game.restartGame();
-        } else {
-          if (game.playerData.score.value != 0) {
-            game.playerData.score.value -= 1; //tolgo un punto
-          }
         }
         _respawn();
-      } else if (other is CheckPoint && !reachedCheckpoint) {
+      }
+      if (other is CheckPoint && !reachedCheckpoint) {
         _reachedCheckpoint();
+      }
+      if (other is Chicken) {
+        other.collidedWithPlayer();
       }
     }
     super.onCollisionStart(intersectionPoints, other);
@@ -479,5 +481,26 @@ class Player extends SpriteAnimationGroupComponent
     await Future.delayed(waitToChangeLevelDuration);
     //SWITCH LEVEL
     game.loadNextLevel();
+  }
+
+  //un nemico chiama questo metodo per dire...ti ho colpito vedi tu cosa fare
+  void collidedWithEnemy() {
+    if (game.playSounds) {
+      FlameAudio.play('hit.wav', volume: game.soundVolume);
+    }
+    //AHIA!
+    if (game.playerData.health.value != 0) {
+      game.playerData.health.value = game.playerData.health.value - 1;
+    }
+    if (game.playerData.health.value == 0) {
+      game.playerData.score.value = 0; //resetto
+
+      game.restartGame();
+    } else {
+      if (game.playerData.score.value != 0) {
+        game.playerData.score.value -= 1; //tolgo un punto
+      }
+    }
+    _respawn();
   }
 }

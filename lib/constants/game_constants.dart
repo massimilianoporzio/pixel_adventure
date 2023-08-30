@@ -1,4 +1,6 @@
 //GAME PROPS
+import 'package:flame/components.dart';
+
 const double kMapTileSize = 16.0;
 const double kStepTime = 0.06;
 const double kPlayerTileSize = 32.0;
@@ -175,6 +177,47 @@ const Map<String, dynamic> fruitProps = {
       'height': 12.0,
     },
   },
+};
+
+//*ENEMIES PROPS
+//NAMES
+const String kChickenName = "Chicken";
+
+const double kChickenSpeed = 120;
+
+final Vector2 kChickenTileSize = Vector2(32, 34);
+const double kChickenIdleStepTime = 0.055;
+const int kChickenIdleSprites = 13;
+
+const double kChickenRunStepTime = 0.04;
+const int kChickenRunSprites = 14;
+
+const double kChickenHitStepTime = 0.05;
+const int kChickenHitSprites = 5;
+
+//quanto rimbalza il player?
+const double kChickenBounceHeight = 260;
+
+//PROPS
+final Map<String, dynamic> enemiesProps = {
+  kChickenName: {
+    'tileSize': Vector2(32, 34),
+    'bounceHeight': kChickenBounceHeight,
+    'animations': {
+      'idle': {
+        'amountOfSprites': kChickenIdleSprites,
+        'stepTime': kChickenIdleStepTime,
+      },
+      'run': {
+        'amountOfSprites': kChickenRunSprites,
+        'stepTime': kChickenRunStepTime,
+      },
+      'hit': {
+        'amountOfSprites': kChickenHitSprites,
+        'stepTime': kChickenHitStepTime,
+      }
+    },
+  }
 };
 
 //*CHARACTERS PROPS

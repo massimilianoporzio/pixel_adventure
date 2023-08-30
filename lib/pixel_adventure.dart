@@ -117,6 +117,7 @@ class PixelAdventure extends FlameGame
   }
 
   void restartGame() {
+    removeWhere((component) => component is LevelComponent);
     currentLevelIndex = 0;
     playerData.score.value = 0;
     playerData.health.value = 5;

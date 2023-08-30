@@ -1,5 +1,4 @@
-import 'package:pixel_adventure/components/collision_block.dart';
-
+import '../components/collision_block.dart';
 import '../components/player.dart';
 
 bool checkCollision(Player player, CollisionBlock block) {
