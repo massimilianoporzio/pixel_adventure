@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:pixel_adventure/constants/game_constants.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
@@ -31,6 +32,8 @@ class Fruit extends SpriteAnimationComponent
     );
   }
 
+  bool collected = false;
+
   @override
   FutureOr<void> onLoad() {
     _buildHitBox(fruitName: fruitName);
@@ -57,19 +60,26 @@ class Fruit extends SpriteAnimationComponent
 
   //metodo chiamato quando player collide con fruit
   void collidedWithPlayer() async {
-    //ANIMAZIONE
-    animation = SpriteAnimation.fromFrameData(
-        game.images.fromCache("Items/Fruits/$kCollectedName.png"),
-        SpriteAnimationData.sequenced(
-          amount: fruitProps[kCollectedName]['amountOfSprites'],
-          stepTime: fruitProps[kCollectedName]['stepTime'],
-          loop: false,
-          textureSize: Vector2.all(
-            fruitProps[kCollectedName]['textureSize'],
-          ),
-        ));
+    if (!collected) {
+      //run once play sound once
+      if (game.playSounds) {
+        FlameAudio.play('collect_fruit.wav', volume: game.soundVolume);
+      }
+      //ANIMAZIONE
+      animation = SpriteAnimation.fromFrameData(
+          game.images.fromCache("Items/Fruits/$kCollectedName.png"),
+          SpriteAnimationData.sequenced(
+            amount: fruitProps[kCollectedName]['amountOfSprites'],
+            stepTime: fruitProps[kCollectedName]['stepTime'],
+            loop: false,
+            textureSize: Vector2.all(
+              fruitProps[kCollectedName]['textureSize'],
+            ),
+          ));
 
-    await animationTicker?.completed;
-    removeFromParent();
+      await animationTicker?.completed;
+      removeFromParent();
+      collected = true;
+    }
   }
 }

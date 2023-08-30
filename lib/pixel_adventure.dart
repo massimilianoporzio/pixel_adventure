@@ -33,7 +33,7 @@ class PixelAdventure extends FlameGame
   late JumpButton jumpButton;
   late Hud hud;
   bool showControls = false;
-  bool playSounds = false;
+  bool playSounds = true;
   double soundVolume = 1.0;
   List<String> levelNames = ['Level-01', 'Level-01'];
   int currentLevelIndex = 0;
@@ -114,6 +114,7 @@ class PixelAdventure extends FlameGame
       //NO MORE LEVELS
       currentLevelIndex = 0;
       playerData.score.value = 0;
+      playerData.health.value = 5;
       _loadLevel(); //riparto dal livello 1
     }
   }

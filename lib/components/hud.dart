@@ -4,7 +4,6 @@ import 'package:flame/components.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
 class Hud extends Component with HasGameRef<PixelAdventure> {
-  int score = 0;
   Hud({super.children, super.priority});
 
   @override
