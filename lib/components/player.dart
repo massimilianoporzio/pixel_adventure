@@ -193,8 +193,17 @@ class Player extends SpriteAnimationGroupComponent
         other.collidedWithPlayer();
       } else if (other is Saw) {
         //AHIA!
-        game.playerData.health.value = game.playerData.health.value - 1;
-        game.playerData.score.value = 0; //resetto
+        if (game.playerData.health.value != 0) {
+          game.playerData.health.value = game.playerData.health.value - 1;
+        }
+        if (game.playerData.health.value == 0) {
+          game.playerData.score.value = 0; //resetto
+          game.restartGame();
+        } else {
+          if (game.playerData.score.value != 0) {
+            game.playerData.score.value -= 1; //tolgo un punto
+          }
+        }
         _respawn();
       } else if (other is CheckPoint && !reachedCheckpoint) {
         _reachedCheckpoint();
@@ -434,7 +443,7 @@ class Player extends SpriteAnimationGroupComponent
     position = startingPosition -
         Vector2.all(kAppearingTileSize - 2 * characterTileSize);
     //RIMETTO SCORE A ZERO
-    game.playerData.score.value = 0;
+    //game.playerData.score.value = 0;
     current = PlayerState.appearing;
     await animationTicker?.completed;
     animationTicker?.reset(); //resetta le animazioni

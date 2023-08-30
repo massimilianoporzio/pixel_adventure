@@ -112,11 +112,15 @@ class PixelAdventure extends FlameGame
       _loadLevel();
     } else {
       //NO MORE LEVELS
-      currentLevelIndex = 0;
-      playerData.score.value = 0;
-      playerData.health.value = 5;
-      _loadLevel(); //riparto dal livello 1
+      restartGame();
     }
+  }
+
+  void restartGame() {
+    currentLevelIndex = 0;
+    playerData.score.value = 0;
+    playerData.health.value = 5;
+    _loadLevel(); //riparto dal livello 1
   }
 
   void _loadLevel() {
