@@ -26,7 +26,7 @@ class LevelComponent extends World with HasGameRef<PixelAdventure> {
   FutureOr<void> onLoad() async {
     level =
         await TiledComponent.load('$levelName.tmx', Vector2.all(kMapTileSize));
-
+    level.debugMode = false;
     add(level); //agg al gioco
 
     _scrollingBackground();
